@@ -119,16 +119,16 @@ function renderHTML(json_data) {
                         <td class="text-center">${item["Weight"]}</td>
                         <td class="text-center">${Number(item["Price"])}</td>
                     </tr>`).join("")}
-                    <tr class="bg-body-secondary">
-                        <th colspan="2" class="text-center">Total</th>
+                    <tr>
+                        <td colspan="2" class="text-center">Total</td>
                         <td class="text-center">${Tqty}</td>
                         <td class="text-center">${cleanDecimal(Tweight)}</td>
                         <td class="text-center">${Tprice.toFixed(0)}</td>
                     </tr>
                 </table>
 
-                <p class="small">${first["Delivery method"]}: ₹${Number(first["Shipping rate"]||0)}/-</p>
-                <p class="small text-end">Total: ₹${Number(first["Total"]||0)}/-</p>
+                <p class="smaller">${first["Delivery method"]}: ₹${Number(first["Shipping rate"]||0)}/-</p>
+                <h6 class="small text-end">Total: ₹${Number(first["Total"]||0)}/-</h6>
                 <p class="small text-ellipsis">Note: ${first["Note from customer"]}</p>
             </div>
 
@@ -157,6 +157,7 @@ body{ background:rgb(180, 180, 180); }
 .right{ width:50%; border-left:dashed 1px black;  margin: 0 !important; padding: 0 !important;}
 table, th, td{ font-size:x-small !important; border:1px solid black; border-collapse:collapse; }
 .text-ellipsis{ overflow:hidden; text-overflow:ellipsis; }
+.smaller{font-size: x-small !important;}
 @media print{
     @page{ size:A4 !important; margin: 0 !important; }
     .body{ width:210mm; background:white; margin: 0 !important; padding: 0 !important; }

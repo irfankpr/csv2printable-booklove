@@ -1,109 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BookLove CSV → HTML (No Backend)</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookLove CSV → HTML (No Backend)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body class="container-fluid p-0 m-0 justify-content-center row">
 
-<!-- Upload UI -->
-<div class="container text-center mt-3" id="action-div">
-    <input type="file" id="csvFile" accept=".csv" class="form-control w-50 mx-auto">
-    <button class="btn btn-success mt-3" onclick="handleCSV()">Upload & Render</button>
-</div>
+    <!-- Upload UI -->
+    <div class="container text-center mt-3" id="action-div">
+        <input type="file" id="csvFile" accept=".csv" class="form-control w-50 mx-auto">
+        <button class="btn btn-success mt-3" onclick="handleCSV()">Upload & Render</button>
+    </div>
 
-<!-- Output container -->
-<div id="output" class="body container p-0 m-0 row justify-content-center"></div>
+    <!-- Output container -->
+    <div id="output" class="body container p-0 m-0 row justify-content-center"></div>
 
-<script>
-    function cleanDecimal(num) {
-    num = Number(num);
+    <script>
+        function cleanDecimal(num) {
+            num = Number(num);
 
-    if (num === 0) return "0.0";              // force 0.0
+            if (num === 0) return "0.0";              // force 0.0
 
-    if (num % 1 === 0) return String(num);    // pure integer, no decimals
+            if (num % 1 === 0) return String(num);    // pure integer, no decimals
 
-    return num.toFixed(3);                    // non-zero decimal, show 3 places
-}
+            return num.toFixed(3);                    // non-zero decimal, show 3 places
+        }
 
-// ✅ Read CSV + Process like Flask
-function handleCSV() {
-    const file = document.getElementById('csvFile').files[0];
-    if (!file) return alert("Upload a CSV!");
+        // ✅ Read CSV + Process like Flask
+        function handleCSV() {
+            const file = document.getElementById('csvFile').files[0];
+            if (!file) return alert("Upload a CSV!");
 
-    const reader = new FileReader();
-    reader.onload = e => {
-        let csv = e.target.result;
-        let data = csvToJson(csv);
-        renderHTML(data);
-    };
-    reader.readAsText(file);
-}
+            const reader = new FileReader();
+            reader.onload = e => {
+                let csv = e.target.result;
+                let data = csvToJson(csv);
+                renderHTML(data);
+            };
+            reader.readAsText(file);
+        }
 
-function csvToJson(csv) {
-    const lines = csv.split(/\r?\n/).filter(l => l.trim() !== "");
-    
-    // ✅ handle BOM
-    const headers = lines[0].replace("\ufeff", "").split(",");
+        function csvToJson(csv) {
+            const lines = csv.split(/\r?\n/).filter(l => l.trim() !== "");
 
-    const data = {};
-    for (let i = 1; i < lines.length; i++) {
-        let parts = parseCSVLine(lines[i]);
-        if (!parts.length) continue;
+            // ✅ handle BOM
+            const headers = lines[0].replace("\ufeff", "").split(",");
 
-        let row = {};
-        headers.forEach((h, idx) => row[h.trim()] = parts[idx] || "");
+            const data = {};
+            for (let i = 1; i < lines.length; i++) {
+                let parts = parseCSVLine(lines[i]);
+                if (!parts.length) continue;
 
-        const orderNo = row["Order number"];
-        if (!data[orderNo]) data[orderNo] = [];
-        data[orderNo].push(row);
-    }
-    return data;
-}
+                let row = {};
+                headers.forEach((h, idx) => row[h.trim()] = parts[idx] || "");
 
-// ✅ Handles commas inside "quoted,text"
-function parseCSVLine(line) {
-    const result = [];
-    let current = "";
-    let insideQuotes = false;
+                const orderNo = row["Order number"];
+                if (!data[orderNo]) data[orderNo] = [];
+                data[orderNo].push(row);
+            }
+            return data;
+        }
 
-    for (let c of line) {
-        if (c === '"' ) insideQuotes = !insideQuotes;
-        else if (c === ',' && !insideQuotes) {
+        // ✅ Handles commas inside "quoted,text"
+        function parseCSVLine(line) {
+            const result = [];
+            let current = "";
+            let insideQuotes = false;
+
+            for (let c of line) {
+                if (c === '"') insideQuotes = !insideQuotes;
+                else if (c === ',' && !insideQuotes) {
+                    result.push(current);
+                    current = "";
+                } else current += c;
+            }
             result.push(current);
-            current = "";
-        } else current += c;
-    }
-    result.push(current);
-    return result;
-}
+            return result;
+        }
 
 
 
 
-// ✅ Render HTML same as Jinja template
-function renderHTML(json_data) {
-    const box = document.getElementById("output");
-    box.innerHTML = "";
+        // ✅ Render HTML same as Jinja template
+        function renderHTML(json_data) {
+            const box = document.getElementById("output");
+            box.innerHTML = "";
 
-    document.getElementById("action-div").style.display = "none";
+            document.getElementById("action-div").style.display = "none";
 
-    Object.entries(json_data).forEach(([order_no, order]) => {
+            Object.entries(json_data).forEach(([order_no, order]) => {
 
-        let Tqty = 0, Tweight = 0, Tprice = 0;
-        order.forEach(item => {
-            Tqty += Number(item["Qty"]);
-            Tweight += Number(item["Qty"]) * Number(item["Weight"]);
-            Tprice += Number(item["Qty"]) * Number(item["Price"]);
-        });
+                let Tqty = 0, Tweight = 0, Tprice = 0;
+                order.forEach(item => {
+                    Tqty += Number(item["Qty"]);
+                    Tweight += Number(item["Qty"]) * Number(item["Weight"]);
+                    Tprice += Number(item["Qty"]) * Number(item["Price"]);
+                });
 
-        const first = order[0];
-        const cardHeight = order.length > 10 ? "297mm" : "calc(297mm / 2)";
+                const first = order[0];
+                const cardHeight = order.length > 10 ? "297mm" : "calc(297mm / 2)";
 
-        const html = `
+                const html = `
         <div class="order container row p-0 m-0 border-bottom border-dark border-1" style="height:${cardHeight}">
             <div class="left container-fluid p-0 m-0">
                 <h6 class="col-12 text-center p-0 mt-3 hilite">#${order_no}</h6>
@@ -126,42 +127,87 @@ function renderHTML(json_data) {
                     </tr>
                 </table>
 
-                <p class="smaller">${first["Delivery method"]}: ₹${Number(first["Shipping rate"]||0)}/-</p>
-                <h6 class="small text-end">Total: ₹${Number(first["Total"]||0)}/-</h6>
+                <p class="smaller">${first["Delivery method"]}: ₹${Number(first["Shipping rate"] || 0)}/-</p>
+                <h6 class="small text-end">Total: ₹${Number(first["Total"] || 0)}/-</h6>
                 <p class="small text-ellipsis">Note: ${first["Note from customer"]}</p>
             </div>
 
             <div class="right container-fluid p-0 m-0">
                 <div class="px-5 mt-4">
                     <p class="h6">${first["Recipient name"]}</p>
-                    <p class="h6">${(first["Delivery address"]||"").replace(")", ") ")}</p>
+                    <p class="h6">${(first["Delivery address"] || "").replace(")", ") ")}</p>
                     <p class="h6">${first["Delivery city"]}</p>
                     <p class="h6">${first["Delivery state"]}</p>
-                    <p class="h6">${String(first["Delivery zip/postal code"]||"").replace(/"/g,"")}</p>
-                    <p class="h6">Phone: ${String(first["Billing phone"]||"").replace(/"/g,"")}</p>
+                    <p class="h6">${String(first["Delivery zip/postal code"] || "").replace(/"/g, "")}</p>
+                    <p class="h6">Phone: ${String(first["Billing phone"] || "").replace(/"/g, "")}</p>
                 </div>
             </div>
         </div>`;
 
-        box.innerHTML += html;
-    });
-}
+                box.innerHTML += html;
+            });
+        }
 
-</script>
+    </script>
 
-<style>
-body{ background:rgb(180, 180, 180); }
-.body{ width:210mm; background:white; margin: 0px !important; padding: 0px !important; }
-.left{ width:50% !important; margin: 0px !important; padding-left: 8px !important;  padding-right: 3px !important;}
-.right{ width:50% !important; border-left:dashed 1px black;  margin: 0px !important; padding: 0px !important;}
-table, th, td{ font-size:x-small !important; border:1px solid black; border-collapse:collapse; }
-.text-ellipsis{ overflow:hidden; text-overflow:ellipsis; }
-.smaller{font-size: x-small !important;}
-@media print{
-    @page{ size:A4 !important; margin: 0px !important; }
-    .body{ width:210mm; background:white; margin: 0px !important; padding: 0px !important; }
-}
-</style>
+    <style>
+        body {
+            background: rgb(180, 180, 180);
+        }
+
+        .body {
+            width: 210mm;
+            background: white;
+            margin: 0px !important;
+            padding: 0px !important;
+        }
+
+        .left {
+            width: 50% !important;
+            margin: 0px !important;
+            padding-left: 8px !important;
+            padding-right: 3px !important;
+        }
+
+        .right {
+            width: 50% !important;
+            border-left: dashed 1px black;
+            margin: 0px !important;
+            padding: 0px !important;
+        }
+
+        table,
+        th,
+        td {
+            font-size: x-small !important;
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+
+        .text-ellipsis {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .smaller {
+            font-size: x-small !important;
+        }
+
+        @media print {
+            @page {
+                size: A4 !important;
+                margin: 0px !important;
+            }
+
+            .body {
+                width: 210mm;
+                background: white;
+                margin: 0px !important;
+                padding: 0px !important;
+            }
+        }
+    </style>
 
 </body>
+
 </html>

@@ -105,7 +105,7 @@ function renderHTML(json_data) {
 
         const html = `
         <div class="order container row p-0 m-0 border border-dark border-2" style="height:${cardHeight}">
-            <div class="left container-fluid p-0 m-0">
+            <div class="left container-fluid">
                 <br>
                 <h6 class="col-12 text-center p-1 hilite">#${order_no}</h6>
                 <p class="col-12 text-center p-0 m-0">${first["Date created"]}, ${first["Time"]}</p>
@@ -151,15 +151,16 @@ function renderHTML(json_data) {
 </script>
 
 <style>
-body{ background:rgb(155, 155, 155); }
+body{ background:rgb(180, 180, 180); }
 .body{ width:210mm; background:white; margin: 0 !important; padding: 0 !important; }
-.left{ width:50%; border-right:dashed 1px black;  margin: 0 !important; padding: 0 !important; }
+.left{ width:50%; border-right:dashed 1px black;  margin: 0 !important; padding: 3 !important; }
 .right{ width:50%; border-left:dashed 1px black;  margin: 0 !important; padding: 0 !important;}
 .hilite{ background:#d5d5d5; }
 table, th, td{ font-size:smaller !important; border:1px solid black; border-collapse:collapse; }
 .text-ellipsis{ overflow:hidden; text-overflow:ellipsis; }
 @media print{
-    @page{ size:A4 !important; margin-left: 0 !important; }
+    @page{ size:A4 !important; margin: 0 !important; }
+    .body{ width:210mm; background:white; margin: 0 !important; padding: 0 !important; }
 }
 </style>
 

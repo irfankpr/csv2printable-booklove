@@ -109,7 +109,7 @@ function renderHTML(json_data) {
                 <br>
                 <h6 class="col-12 text-center p-1 hilite">#${order_no}</h6>
                 <p class="col-12 text-center p-0 m-0">${first["Date created"]}, ${first["Time"]}</p>
-                <table class="container col-12 border-3 border-secondary">
+                <table class="container col-12 border-1 border-secondary">
                     <tr class="text-center"><th>SL</th><th>Item</th><th>Qt</th><th>Wt</th><th>Pr</th></tr>
                     ${order.map((item, idx) => `
                     <tr>
@@ -155,8 +155,7 @@ body{ background:rgb(180, 180, 180); }
 .body{ width:210mm; background:white; margin: 0 !important; padding: 0 !important; }
 .left{ width:50%; border-right:dashed 1px black;  margin: 0 !important; padding: 3 !important; }
 .right{ width:50%; border-left:dashed 1px black;  margin: 0 !important; padding: 0 !important;}
-.hilite{ background:#d5d5d5; }
-table, th, td{ font-size:smaller !important; border:1px solid black; border-collapse:collapse; }
+table, th, td{ font-size:x-small !important; border:1px solid black; border-collapse:collapse; }
 .text-ellipsis{ overflow:hidden; text-overflow:ellipsis; }
 @media print{
     @page{ size:A4 !important; margin: 0 !important; }

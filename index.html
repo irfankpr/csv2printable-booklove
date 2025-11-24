@@ -4,33 +4,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BookLove CSV → HTML (No Backend)</title>
+    <title>BookLove CSV → HTML (2 Orders Per Page)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
-<body class="container-fluid p-0 m-0 justify-content-center row">
+<body>
 
     <!-- Upload UI -->
-    <div class="container text-center mt-3" id="action-div">
+    <div class="text-center mt-3" id="action-div">
         <input type="file" id="csvFile" accept=".csv" class="form-control w-50 mx-auto">
         <button class="btn btn-success mt-3" onclick="handleCSV()">Upload & Render</button>
     </div>
 
-    <!-- Output container -->
-    <div id="output" class="body container p-0 m-0 row justify-content-center"></div>
+    <!-- Output -->
+    <div id="output" class="p-0 m-0 container-fluid row justify-content-center"></div>
+
 
     <script>
         function cleanDecimal(num) {
             num = Number(num);
-
-            if (num === 0) return "0.0";              // force 0.0
-
-            if (num % 1 === 0) return String(num);    // pure integer, no decimals
-
-            return num.toFixed(3);                    // non-zero decimal, show 3 places
+            if (num === 0) return "0.0";
+            if (num % 1 === 0) return String(num);
+            return num.toFixed(3);
         }
 
-        // ✅ Read CSV + Process like Flask
         function handleCSV() {
             const file = document.getElementById('csvFile').files[0];
             if (!file) return alert("Upload a CSV!");
@@ -46,8 +43,6 @@
 
         function csvToJson(csv) {
             const lines = csv.split(/\r?\n/).filter(l => l.trim() !== "");
-
-            // ✅ handle BOM
             const headers = lines[0].replace("\ufeff", "").split(",");
 
             const data = {};
@@ -65,7 +60,6 @@
             return data;
         }
 
-        // ✅ Handles commas inside "quoted,text"
         function parseCSVLine(line) {
             const result = [];
             let current = "";
@@ -82,130 +76,153 @@
             return result;
         }
 
-
-
-
-        // ✅ Render HTML same as Jinja template
         function renderHTML(json_data) {
             const box = document.getElementById("output");
             box.innerHTML = "";
-
             document.getElementById("action-div").style.display = "none";
 
-            Object.entries(json_data).forEach(([order_no, order]) => {
+            let orders = Object.entries(json_data);
 
-                let Tqty = 0, Tweight = 0, Tprice = 0;
-                order.forEach(item => {
-                    Tqty += Number(item["Qty"]);
-                    Tweight += Number(item["Qty"]) * Number(item["Weight"]);
-                    Tprice += Number(item["Qty"]) * Number(item["Price"]);
-                });
+            for (let i = 0; i < orders.length; i += 2) {
 
-                const first = order[0];
-                const cardHeight = order.length > 10 ? "297mm" : "calc(297mm / 2)";
+                const [order_no1, order1] = orders[i];
+                const [order_no2, order2] = orders[i + 1] || [];
 
-                const html = `
-        <div class="order container row p-0 m-0 border-bottom border-dark border-1" style="height:${cardHeight}">
-            <div class="left container-fluid p-0 m-0">
-                <h6 class="col-12 text-center p-0 mt-3 hilite">#${order_no}</h6>
-                <p class="col-12 text-center p-0 m-0">${first["Date created"]}, ${first["Time"]}</p>
-                <table class="container col-12 border-1 border-secondary">
+                let pageHTML = `<div class="page row p-0 m-0">`;
+
+                pageHTML += order_no1 ? buildOrderCard(order_no1, order1) : "";
+                pageHTML += order_no2 ? buildOrderCard(order_no2, order2) : "";
+
+                pageHTML += `</div>`;
+                box.innerHTML += pageHTML;
+            }
+        }
+
+        function buildOrderCard(order_no, order) {
+
+            let Tqty = 0, Tweight = 0, Tprice = 0;
+            order.forEach(item => {
+                Tqty += Number(item["Qty"]);
+                Tweight += Number(item["Qty"]) * Number(item["Weight"]);
+                Tprice += Number(item["Qty"]) * Number(item["Price"]);
+            });
+
+            const first = order[0];
+
+            return `
+        <div class="order-card col-6 border p-1 d-flex flex-column">
+
+            <div class="order-top flex-grow-1">
+                <h6 class="text-center mt-1">#${order_no}</h6>
+                <p class="text-center">${first["Date created"]}, ${first["Time"]}</p>
+
+                <table class="col-12">
                     <tr class="text-center"><th>SL</th><th>Item</th><th>Qt</th><th>Wt</th><th>Pr</th></tr>
+
                     ${order.map((item, idx) => `
-                    <tr>
-                        <td class="text-center">${idx + 1}</td>
-                        <td class="col-10">${item["Item"]}</td>
-                        <td class="text-center">${item["Qty"]}</td>
-                        <td class="text-center">${item["Weight"]}</td>
-                        <td class="text-center">${Number(item["Price"])}</td>
-                    </tr>`).join("")}
+                        <tr>
+                            <td class="text-center">${idx + 1}</td>
+                            <td class="">${item["Item"]}</td>
+                            <td class="text-center">${item["Qty"]}</td>
+                            <td class="text-center">${item["Weight"]}</td>
+                            <td class="text-center">${Number(item["Price"])}</td>
+                        </tr>
+                    `).join("")}
+
                     <tr>
                         <td colspan="2" class="text-center">Total</td>
                         <td class="text-center">${Tqty}</td>
                         <td class="text-center">${cleanDecimal(Tweight)}</td>
-                        <td class="text-center">${Tprice.toFixed(0)}</td>
+                        <td class="text-center">${Tprice}</td>
                     </tr>
                 </table>
 
-                <p class="smaller">${first["Delivery method"]}: ₹${Number(first["Shipping rate"] || 0)}/-</p>
-                <h6 class="small text-end">Total: ₹${Number(first["Total"] || 0)}/-</h6>
-                <p class="small text-ellipsis">Note: ${first["Note from customer"]}</p>
+                <p class="smaller">${first["Delivery method"]}: ₹${first["Shipping rate"] || 0}/-</p>
+                <h6 class="small text-end">Total: ₹${first["Total"] || 0}/-</h6>
+                <p class="small">Note: ${first["Note from customer"]}</p>
             </div>
 
-            <div class="right container-fluid p-0 m-0">
-                <div class="px-5 mt-4">
-                    <p class="h6">${first["Recipient name"]}</p>
-                    <p class="h6">${(first["Delivery address"] || "").replace(")", ") ")}</p>
-                    <p class="h6">${first["Delivery city"]}</p>
-                    <p class="h6">${first["Delivery state"]}</p>
-                    <p class="h6">${String(first["Delivery zip/postal code"] || "").replace(/"/g, "")}</p>
-                    <p class="h6">Phone: ${String(first["Billing phone"] || "").replace(/"/g, "")}</p>
-                </div>
+            <div class="order-bottom mt-auto border-top p-2">
+                <p class="h6">${first["Recipient name"]}</p>
+                <p class="h6">${first["Delivery address"]}</p>
+                <p class="h6">${first["Delivery city"]}</p>
+                <p class="h6">${first["Delivery state"]}</p>
+                <p class="h6">${first["Delivery zip/postal code"]}</p>
+                <p class="h6">Phone: ${first["Billing phone"]}</p>
             </div>
-        </div>`;
 
-                box.innerHTML += html;
-            });
+        </div>
+        `;
         }
-
     </script>
 
     <style>
-        body {
-            background: rgb(180, 180, 180);
-        }
+/* Page background (for screen only) */
+html, body {
+    margin: 0;
+    padding: 0;
+    background-color: #c5c5c5;
+}
 
-        .body {
-            width: 210mm;
-            background: white;
-            margin: 0px !important;
-            padding: 0px !important;
-        }
+/* Actual A4 print page */
+.page {
+    width: 210mm;
+    height: 297mm;
+    background: white;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: row;
+    page-break-after: always;
+}
 
-        .left {
-            width: 50% !important;
-            margin: 0px !important;
-            padding-left: 8px !important;
-            padding-right: 3px !important;
-        }
+/* Wrap text inside address / any item field */
+.order-bottom p,
+.order-top p,
+.order-card table td {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+}
 
-        .right {
-            width: 50% !important;
-            border-left: dashed 1px black;
-            margin: 0px !important;
-            padding: 0px !important;
-        }
+/* Order card */
+.order-card {
+    height: 100%;
+    border: 1px dashed black !important;
+}
 
-        table,
-        th,
-        td {
-            font-size: x-small !important;
-            border: 1px solid black;
-            border-collapse: collapse;
-        }
+/* Table look */
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+    font-size: x-small !important;
+}
 
-        .text-ellipsis {
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+.smaller {
+    font-size: x-small !important;
+}
 
-        .smaller {
-            font-size: x-small !important;
-        }
+/* PRINT MODE SETTINGS */
+@media print {
+    @page {
+        size: A4;
+        margin: 0;   /* full bleed */
+    }
 
-        @media print {
-            @page {
-                size: A4 !important;
-                margin: 0px !important;
-            }
+    html, body {
+        background: white !important;
+        width: auto !important;
+        height: auto !important;
+        overflow: visible !important;   /* allow multiple pages */
+        margin: 0 !important;
+        padding: 0 !important;
+    }
 
-            .body {
-                width: 210mm;
-                background: white;
-                margin: 0px !important;
-                padding: 0px !important;
-            }
-        }
+    .page {
+        width: 210mm !important;
+        height: 297mm !important;
+        page-break-after: always !important;
+    }
+}
     </style>
 
 </body>

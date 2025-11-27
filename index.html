@@ -141,14 +141,25 @@
                 <h6 class="small text-end">Total: ₹${first["Total"] || 0}/-</h6>
                 <p class="small">Note: ${first["Note from customer"]}</p>
             </div>
+            <div class="from-address container-fluid row m-0 p-1">
+                <small>From:</small>
+                <p>Booklove, Kunduparamba Road, Puthiyangadi Po, Kozhikode, 673021</p>
+                <p>PH: 9744155666</p>
+                <div class='container-fluid row col-9 m-0 p-0'>
+                    <p class="col">Customer ID : 1375497519</p>
+                    <p class="col text-end">Contract ID : 41776681</p>
+                </div>
 
-            <div class="order-bottom mt-auto border-top p-2">
-                <p class="h6">${first["Recipient name"]}</p>
-                <p class="h6">${first["Delivery address"]}</p>
-                <p class="h6">${first["Delivery city"]}</p>
-                <p class="h6">${first["Delivery state"]}</p>
-                <p class="h6">${first["Delivery zip/postal code"]}</p>
-                <p class="h6">Phone: ${first["Billing phone"]}</p>
+            </div>
+
+            <div class="order-bottom to-address mt-auto border-top p-2">
+                <small>To:</small>
+                <p>${first["Recipient name"]}</p>
+                <p>${first["Delivery address"]}</p>
+                <p>${first["Delivery city"]}</p>
+                <p>${first["Delivery state"]}</p>
+                <p>${first["Delivery zip/postal code"]}</p>
+                <p>Phone: ${first["Billing phone"]}</p>
             </div>
 
         </div>
@@ -174,6 +185,26 @@ html, body {
     flex-direction: row;
     page-break-after: always;
 }
+
+.from-address small, .to-address small{
+    font-weight: 500;
+    padding: 0!important;
+    margin: 0;
+}
+
+.from-address p{
+    font-size: x-small ;
+    margin: 0 !important;
+    padding: 0!important;
+    line-height: 1.05 !important;
+}
+.to-address p{
+    font-size: small !important;
+    margin: 0 !important;
+    padding: 0!important;
+    line-height: 1.05 !important;
+}
+
 
 /* Wrap text inside address / any item field */
 .order-bottom p,

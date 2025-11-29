@@ -13,6 +13,11 @@
     <!-- Upload UI -->
     <div class="text-center mt-3" id="action-div">
         <input type="file" id="csvFile" accept=".csv" class="form-control w-50 mx-auto">
+        <select id="fromSelect" class="form-select w-50 mx-auto mt-3">
+            <option value="" disabled selected>Select from address</option>
+            <option value="kozhikode">Kozhikode Branch</option>
+            <option value="thrissur">Thrissur Branch</option>
+        </select>
         <button class="btn btn-success mt-3" onclick="handleCSV()">Upload & Render</button>
     </div>
 
@@ -20,7 +25,27 @@
     <div id="output" class="p-0 m-0 container-fluid row justify-content-center"></div>
 
 
-    <script>
+<script>
+    let selectedFromAddress = `
+        <p>Booklove, Kunduparamba Road, Puthiyangadi Po, Kozhikode, 673021</p>
+        <p>PH: 9744155666</p>
+    `;
+document.getElementById("fromSelect").addEventListener("change", (e) => {
+    if (e.target.value === "kozhikode") {
+        selectedFromAddress = `
+        <p>Booklove, Kunduparamba Road, Puthiyangadi Po, Kozhikode, 673021</p>
+        <p>PH: 9744155666</p>
+        `;
+    } else {
+        selectedFromAddress = `
+        <P>Mankind Book Store, Venus Complex<, M G Road, West Fort, Thrissur, 680667</p>
+        <p>PH: 90489 44045</p>
+        `;
+    }
+});
+
+
+
         function cleanDecimal(num) {
             num = Number(num);
             if (num === 0) return "0.0";
@@ -143,8 +168,7 @@
             </div>
             <div class="from-address container-fluid row m-0 p-1">
                 <small>From:</small>
-                <p>Booklove, Kunduparamba Road, Puthiyangadi Po, Kozhikode, 673021</p>
-                <p>PH: 9744155666</p>
+                ${selectedFromAddress}
                 <div class='container-fluid row col-9 m-0 p-0'>
                     <p class="col">Customer ID : 1375497519</p>
                     <p class="col text-end">Contract ID : 41776681</p>

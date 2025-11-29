@@ -38,7 +38,7 @@ document.getElementById("fromSelect").addEventListener("change", (e) => {
         `;
     } else {
         selectedFromAddress = `
-        <P>Mankind Book Store, Venus Complex<, M G Road, West Fort, Thrissur, 680667</p>
+        <P>Mankind Book Store, Venus Complex, M G Road, West Fort, Thrissur, 680667</p>
         <p>PH: 90489 44045</p>
         `;
     }
@@ -55,7 +55,9 @@ document.getElementById("fromSelect").addEventListener("change", (e) => {
 
         function handleCSV() {
             const file = document.getElementById('csvFile').files[0];
-            if (!file) return alert("Upload a CSV!");
+            if (!file) return alert("⚠️ Upload a CSV!");
+            const address = document.getElementById("fromSelect").value;
+            if (!address) return alert("⚠️ Please select a 'From Address");
 
             const reader = new FileReader();
             reader.onload = e => {

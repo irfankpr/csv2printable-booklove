@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BookLove CSV → HTML (2 Orders Per Page)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 </head>
 
 <body>
@@ -24,12 +25,13 @@
     <!-- Output -->
     <div id="output" class="p-0 m-0 container-fluid row justify-content-center"></div>
 
-
 <script>
-    let selectedFromAddress = `
-        <p>Booklove, Kunduparamba Road, Puthiyangadi Po, Kozhikode, 673021</p>
-        <p>PH: 9744155666</p>
-    `;
+
+let selectedFromAddress = `
+    <p>Booklove, Kunduparamba Road, Puthiyangadi Po, Kozhikode, 673021</p>
+    <p>PH: 9744155666</p>
+`;
+
 document.getElementById("fromSelect").addEventListener("change", (e) => {
     if (e.target.value === "kozhikode") {
         selectedFromAddress = `
@@ -38,170 +40,142 @@ document.getElementById("fromSelect").addEventListener("change", (e) => {
         `;
     } else {
         selectedFromAddress = `
-        <P>Mankind Book Store, Venus Complex, M G Road, West Fort, Thrissur, 680667</p>
+        <p>Mankind Book Store, Venus Complex, M G Road, West Fort, Thrissur, 680667</p>
         <p>PH: 90489 44045</p>
         `;
     }
 });
 
-
-
-        function cleanDecimal(num) {
-            num = Number(num);
-            if (num === 0) return "0.0";
-            if (num % 1 === 0) return String(num);
-            return num.toFixed(3);
-        }
-
-        function handleCSV() {
-            const file = document.getElementById('csvFile').files[0];
-            if (!file) return alert("⚠️ Upload a CSV!");
-            const address = document.getElementById("fromSelect").value;
-            if (!address) return alert("⚠️ Please select a 'From Address");
-
-            const reader = new FileReader();
-            reader.onload = e => {
-                let csv = e.target.result;
-                let data = csvToJson(csv);
-                renderHTML(data);
-            };
-            reader.readAsText(file);
-        }
-
-        function csvToJson(csv) {
-            const lines = csv.split(/\r?\n/).filter(l => l.trim() !== "");
-            const headers = lines[0].replace("\ufeff", "").split(",");
-
-            const data = {};
-            for (let i = 1; i < lines.length; i++) {
-                let parts = parseCSVLine(lines[i]);
-                if (!parts.length) continue;
-
-                let row = {};
-                headers.forEach((h, idx) => row[h.trim()] = parts[idx] || "");
-
-                const orderNo = row["Order number"];
-                if (!data[orderNo]) data[orderNo] = [];
-                data[orderNo].push(row);
-            }
-            return data;
-        }
-
-        function parseCSVLine(line) {
-            const result = [];
-            let current = "";
-            let insideQuotes = false;
-
-            for (let c of line) {
-                if (c === '"') insideQuotes = !insideQuotes;
-                else if (c === ',' && !insideQuotes) {
-                    result.push(current);
-                    current = "";
-                } else current += c;
-            }
-            result.push(current);
-            return result;
-        }
-
-        function renderHTML(json_data) {
-            const box = document.getElementById("output");
-            box.innerHTML = "";
-            document.getElementById("action-div").style.display = "none";
-
-            let orders = Object.entries(json_data);
-
-            for (let i = 0; i < orders.length; i += 2) {
-
-                const [order_no1, order1] = orders[i];
-                const [order_no2, order2] = orders[i + 1] || [];
-
-                let pageHTML = `<div class="page row p-0 m-0">`;
-
-                pageHTML += order_no1 ? buildOrderCard(order_no1, order1) : "";
-                pageHTML += order_no2 ? buildOrderCard(order_no2, order2) : "";
-
-                pageHTML += `</div>`;
-                box.innerHTML += pageHTML;
-            }
-        }
-
-        function buildOrderCard(order_no, order) {
-
-            let Tqty = 0, Tweight = 0, Tprice = 0;
-            order.forEach(item => {
-                Tqty += Number(item["Qty"]);
-                Tweight += Number(item["Qty"]) * Number(item["Weight"]);
-                Tprice += Number(item["Qty"]) * Number(item["Price"]);
-            });
-
-            const first = order[0];
-
-            return `
-        <div class="order-card col-6 border p-1 d-flex flex-column">
-
-            <div class="order-top flex-grow-1">
-                <h6 class="text-center mt-1">#${order_no}</h6>
-                <p class="text-center">${first["Date created"]}, ${first["Time"]}</p>
-
-                <table class="col-12">
-                    <tr class="text-center"><th>SL</th><th>Item</th><th>Qt</th><th>Wt</th><th>Pr</th></tr>
-
-                    ${order.map((item, idx) => `
-                        <tr>
-                            <td class="text-center">${idx + 1}</td>
-                            <td class="">${item["Item"]}</td>
-                            <td class="text-center">${item["Qty"]}</td>
-                            <td class="text-center">${item["Weight"]}</td>
-                            <td class="text-center">${Number(item["Price"])}</td>
-                        </tr>
-                    `).join("")}
-
-                    <tr>
-                        <td colspan="2" class="text-center">Total</td>
-                        <td class="text-center">${Tqty}</td>
-                        <td class="text-center">${cleanDecimal(Tweight)}</td>
-                        <td class="text-center">${Tprice}</td>
-                    </tr>
-                </table>
-
-                <p class="smaller">${first["Delivery method"]}: ₹${first["Shipping rate"] || 0}/-</p>
-                <h6 class="small text-end">Total: ₹${first["Total"] || 0}/-</h6>
-                <p class="small">Note: ${first["Note from customer"]}</p>
-            </div>
-            <div class="from-address container-fluid row m-0 p-1">
-                <small>From:</small>
-                ${selectedFromAddress}
-                <div class='container-fluid row col-9 m-0 p-0'>
-                    <p class="col">Customer ID : 1375497519</p>
-                    <p class="col text-end">Contract ID : 41776681</p>
-                </div>
-
-            </div>
-
-            <div class="order-bottom to-address mt-auto border-top p-2">
-                <small>To:</small>
-                <p>${first["Recipient name"]}</p>
-                <p>${first["Delivery address"]}</p>
-                <p>${first["Delivery city"]}</p>
-                <p>${first["Delivery state"]}</p>
-                <p>${first["Delivery zip/postal code"]}</p>
-                <p>Phone: ${first["Billing phone"]}</p>
-            </div>
-
-        </div>
-        `;
-        }
-    </script>
-
-    <style>
-/* Page background (for screen only) */
-html, body {
-    margin: 0;
-    padding: 0;
-    background-color: #c5c5c5;
+function cleanDecimal(num) {
+    num = Number(num);
+    if (num === 0) return "0.0";
+    if (num % 1 === 0) return String(num);
+    return num.toFixed(3);
 }
 
-/* Actual A4 print page */
+function handleCSV() {
+
+    const file = document.getElementById("csvFile").files[0];
+    if (!file) return alert("⚠️ Upload a CSV!");
+    if (!document.getElementById("fromSelect").value) return alert("⚠️ Please select a 'From Address");
+
+    Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        dynamicTyping: false,
+        complete: function(results) {
+            let rows = results.data;
+
+            const grouped = {};
+
+            rows.forEach(row => {
+                const orderNo = row["Order number"];
+                if (!orderNo) return;
+                if (!grouped[orderNo]) grouped[orderNo] = [];
+                grouped[orderNo].push(row);
+            });
+
+            renderHTML(grouped);
+        }
+    });
+}
+
+
+function renderHTML(json_data) {
+    const box = document.getElementById("output");
+    box.innerHTML = "";
+    document.getElementById("action-div").style.display = "none";
+
+    let orders = Object.entries(json_data);
+
+    for (let i = 0; i < orders.length; i += 2) {
+
+        const [order_no1, order1] = orders[i];
+        const [order_no2, order2] = orders[i + 1] || [];
+
+        let pageHTML = `<div class="page row p-0 m-0">`;
+
+        pageHTML += order_no1 ? buildOrderCard(order_no1, order1) : "";
+        pageHTML += order_no2 ? buildOrderCard(order_no2, order2) : "";
+
+        pageHTML += `</div>`;
+        box.innerHTML += pageHTML;
+    }
+}
+
+
+function buildOrderCard(order_no, order) {
+
+    let Tqty = 0, Tweight = 0, Tprice = 0;
+    order.forEach(item => {
+        Tqty += Number(item["Qty"]);
+        Tweight += Number(item["Qty"]) * Number(item["Weight"]);
+        Tprice += Number(item["Qty"]) * Number(item["Price"]);
+    });
+
+    const first = order[0];
+
+    return `
+<div class="order-card col-6 border p-1 d-flex flex-column">
+
+    <div class="order-top flex-grow-1">
+        <h6 class="text-center mt-1">#${order_no}</h6>
+        <p class="text-center">${first["Date created"]}, ${first["Time"]}</p>
+
+        <table class="col-12">
+            <tr class="text-center"><th>SL</th><th>Item</th><th>Qt</th><th>Wt</th><th>Pr</th></tr>
+
+            ${order.map((item, idx) => `
+                <tr>
+                    <td class="text-center">${idx + 1}</td>
+                    <td class="">${item["Item"]}</td>
+                    <td class="text-center">${item["Qty"]}</td>
+                    <td class="text-center">${item["Weight"]}</td>
+                    <td class="text-center">${Number(item["Price"])}</td>
+                </tr>
+            `).join("")}
+
+            <tr>
+                <td colspan="2" class="text-center">Total</td>
+                <td class="text-center">${Tqty}</td>
+                <td class="text-center">${cleanDecimal(Tweight)}</td>
+                <td class="text-center">${Tprice}</td>
+            </tr>
+        </table>
+
+        <p class="smaller">${first["Delivery method"]}: ₹${first["Shipping rate"] || 0}/-</p>
+        <h6 class="small text-end">Total: ₹${first["Total"] || 0}/-</h6>
+        <p class="small">Note: ${first["Note from customer"]}</p>
+    </div>
+
+    <div class="from-address container-fluid row m-0 p-1">
+        <small>From:</small>
+        ${selectedFromAddress}
+        <div class='container-fluid row col-9 m-0 p-0'>
+            <p class="col">Customer ID : 1375497519</p>
+            <p class="col text-end">Contract ID : 41776681</p>
+        </div>
+    </div>
+
+    <div class="order-bottom to-address mt-auto border-top p-2">
+        <small>To:</small>
+        <p>${first["Recipient name"]}</p>
+        <p>${first["Delivery address"]}</p>
+        <p>${first["Delivery city"]}</p>
+        <p>${first["Delivery state"]}</p>
+        <p>${first["Delivery zip/postal code"]}</p>
+        <p>Phone: ${first["Billing phone"]}</p>
+    </div>
+
+</div>
+`;
+}
+
+</script>
+
+<style>
+html, body { margin: 0; padding: 0; background-color: #c5c5c5; }
+
 .page {
     width: 210mm;
     height: 297mm;
@@ -214,8 +188,6 @@ html, body {
 
 .from-address small, .to-address small{
     font-weight: 500;
-    padding: 0!important;
-    margin: 0;
 }
 
 .from-address p{
@@ -231,23 +203,17 @@ html, body {
     line-height: 1.05 !important;
 }
 
-
-/* Wrap text inside address / any item field */
-.order-bottom p,
-.order-top p,
-.order-card table td {
+.order-bottom p, .order-top p, .order-card table td {
     white-space: normal !important;
     word-wrap: break-word !important;
     overflow-wrap: break-word !important;
 }
 
-/* Order card */
 .order-card {
     height: 100%;
     border: 1px dashed black !important;
 }
 
-/* Table look */
 table, th, td {
     border: 1px solid black;
     border-collapse: collapse;
@@ -258,18 +224,11 @@ table, th, td {
     font-size: x-small !important;
 }
 
-/* PRINT MODE SETTINGS */
 @media print {
-    @page {
-        size: A4;
-        margin: 0;   /* full bleed */
-    }
+    @page { size: A4; margin: 0; }
 
     html, body {
         background: white !important;
-        width: auto !important;
-        height: auto !important;
-        overflow: visible !important;   /* allow multiple pages */
         margin: 0 !important;
         padding: 0 !important;
     }
@@ -280,8 +239,7 @@ table, th, td {
         page-break-after: always !important;
     }
 }
-    </style>
+</style>
 
 </body>
-
 </html>

@@ -30,6 +30,10 @@
 let selectedFromAddress = `
     <p>Booklove, Kunduparamba Road, Puthiyangadi Po, Kozhikode, 673021</p>
     <p>PH: 9744155666</p>
+    <div class='container-fluid row col-9 m-0 p-0'>
+        <p class="col">Customer ID : 1904006929</p>
+        <p class="col text-end">Contract ID : 41462796</p>
+    </div>
 `;
 
 document.getElementById("fromSelect").addEventListener("change", (e) => {
@@ -37,11 +41,19 @@ document.getElementById("fromSelect").addEventListener("change", (e) => {
         selectedFromAddress = `
         <p>Booklove, Kunduparamba Road, Puthiyangadi Po, Kozhikode, 673021</p>
         <p>PH: 9744155666</p>
+        <div class='container-fluid row col-9 m-0 p-0'>
+            <p class="col">Customer ID : 1904006929</p>
+            <p class="col text-end">Contract ID : 41462796</p>
+        </div>
         `;
     } else {
         selectedFromAddress = `
         <p>Mankind Book Store, Venus Complex, M G Road, West Fort, Thrissur, 680667</p>
         <p>PH: 90489 44045</p>
+        <div class='container-fluid row col-9 m-0 p-0'>
+            <p class="col">Customer ID : 1375497519</p>
+            <p class="col text-end">Contract ID : 41776681</p>
+        </div>
         `;
     }
 });
@@ -148,16 +160,12 @@ function buildOrderCard(order_no, order) {
         <p class="small">Note: ${first["Note from customer"]}</p>
     </div>
 
-    <div class="from-address container-fluid row m-0 p-1">
-        <small>From:</small>
+    <div class="from-address container-fluid row m-0 p-2">
+        <small class='p-0'>From:</small>
         ${selectedFromAddress}
-        <div class='container-fluid row col-9 m-0 p-0'>
-            <p class="col">Customer ID : 1375497519</p>
-            <p class="col text-end">Contract ID : 41776681</p>
-        </div>
     </div>
 
-    <div class="order-bottom to-address mt-auto border-top p-2">
+    <div class="order-bottom to-address mt-0 border-top p-2">
         <small>To:</small>
         <p>${first["Recipient name"]}</p>
         <p>${first["Delivery address"]}</p>
@@ -186,6 +194,13 @@ html, body { margin: 0; padding: 0; background-color: #c5c5c5; }
     page-break-after: always;
 }
 
+.order-card {
+    height: 100% !important;
+}
+.order-card:first-child {
+    border-right: 1px dashed #000 !important;
+}
+
 .from-address small, .to-address small{
     font-weight: 500;
 }
@@ -207,11 +222,6 @@ html, body { margin: 0; padding: 0; background-color: #c5c5c5; }
     white-space: normal !important;
     word-wrap: break-word !important;
     overflow-wrap: break-word !important;
-}
-
-.order-card {
-    height: 100%;
-    border: 1px dashed black !important;
 }
 
 table, th, td {

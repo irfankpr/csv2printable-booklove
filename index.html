@@ -39,7 +39,7 @@ let selectedFromAddress = `
 document.getElementById("fromSelect").addEventListener("change", (e) => {
     if (e.target.value === "kozhikode") {
         selectedFromAddress = `
-        <p>Booklove, Kunduparamba Road, Puthiyangadi Po, Kozhikode, 673021</p>
+        <p>Mankind, Kunduparamba Road, Puthiyangadi Po, Kozhikode, 673021</p>
         <p>PH: 9744155666</p>
         <div class='container-fluid row col-9 m-0 p-0'>
             <p class="col">Customer ID : 1904006929</p>
@@ -50,10 +50,6 @@ document.getElementById("fromSelect").addEventListener("change", (e) => {
         selectedFromAddress = `
         <p>Mankind Book Store, Venus Complex, M G Road, West Fort, Thrissur, 680667</p>
         <p>PH: 90489 44045</p>
-        <div class='container-fluid row col-9 m-0 p-0'>
-            <p class="col">Customer ID : 1375497519</p>
-            <p class="col text-end">Contract ID : 41776681</p>
-        </div>
         `;
     }
 });
@@ -157,7 +153,6 @@ function buildOrderCard(order_no, order) {
 
         <p class="smaller">${first["Delivery method"]}: ₹${first["Shipping rate"] || 0}/-</p>
         <h6 class="small text-end">Total: ₹${first["Total"] || 0}/-</h6>
-        <p class="small">Note: ${first["Note from customer"]}</p>
     </div>
 
     <div class="from-address container-fluid row m-0 p-2">
